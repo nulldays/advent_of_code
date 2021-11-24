@@ -1,38 +1,56 @@
-import { readFile } from 'fs'
+import { readFileSync } from 'fs'
 
-interface Houses {
-    [index: string]: number
+type Vect = Array<number>
+type Houses = Set<string>
+
+type UpdateFunction = (curr: Vect) => Vect
+interface Update {
+    [key: string]: UpdateFunction
 }
 
-
-const update = {
-    '>': (xy: Array<number>) => [xy[0] + 1, xy[1]],
-    '<': (xy: Array<number>) => [xy[0] - 1, xy[1]],
-    '^': (xy: Array<number>) => [xy[0], xy[1] + 1],
-    'v': (xy: Array<number>) => [xy[0], xy[1] - 1]
+const update: Update = {
+    '>': (curr: Vect) => [curr[0] + 1, curr[1]],
+    '<': (curr: Vect) => [curr[0] - 1, curr[1]],
+    '^': (curr: Vect) => [curr[0], curr[1] + 1],
+    'v': (curr: Vect) => [curr[0], curr[1] - 1]
 }
 
-const addVisit = (houses: Houses, vect: string): void => {
-    if (houses[vect]) {
-        houses[vect] += 1;
-    } else {
-        houses[vect] = 1
-    }
-}
+function partOne() {
+    const data = readFileSync('input.txt', { encoding: 'utf-8' }).toString()
+    const houses: Houses = new Set()
 
+    let current: Vect = [0, 0]
+    houses.add(current.toString())
 
-readFile('input.txt', (err, data) => {
-    const houses: Houses = {}
-
-    let current = [0, 0]
-
-    const path = data.toString()
-
-    for (const h of path) {
-        const currentStr = current.toString()
-        addVisit(houses, currentStr)
-        current = update[h](current)
+    for (const move of data) {
+        current = update[move](current)
+        houses.add(current.toString())
     }
 
-    console.log(Object.keys(houses).length)
-})
+    return houses.size
+}
+
+function partTwo() {
+    const data = readFileSync('input.txt', { encoding: 'utf-8' }).toString()
+    const houses: Houses = new Set()
+
+    let currentSanta: Vect = [0, 0]
+    let currentRobot: Vect = [0, 0]
+    houses.add(currentSanta.toString())
+
+    for (let i = 0; i <data.length; i++) {
+        const move = data[i]
+        if (i % 2 == 0) {
+            currentRobot = update[move](currentRobot)
+            houses.add(currentRobot.toString())
+        } else {
+            currentSanta = update[move](currentSanta)
+            houses.add(currentSanta.toString())
+        }
+    }
+    
+    return houses.size
+}
+
+console.log(`The solution for Part 1:\t${partOne()}`)
+console.log(`The solution for Part 2:\t${partTwo()}`)
